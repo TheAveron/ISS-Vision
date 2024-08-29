@@ -1,7 +1,9 @@
-from datetime import datetime
-import time
 import threading
+import time
+from datetime import datetime
+
 from .database import get_db_connection
+
 
 def add_reminder(user_id, pass_time):
     conn = get_db_connection()

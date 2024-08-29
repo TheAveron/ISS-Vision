@@ -1,0 +1,30 @@
+header {
+    height: 8vh;
+    padding: 0vh 5vw;
+    width: 90vw;
+    border-bottom: solid black 0.003mm;
+    justify-content: space-between;
+    display: flex;
+    place-items: center;    
+}
+
+#map {
+    height: 92vh;
+    width: 100vw;
+}
+
+.leaflet-left {
+    left: 10px;
+}
+
+.leaflet-top {
+    top: 15vh;
+}
+
+.navbar {
+    display: flex;
+    flex-direction: row;
+    place-items: center;
+    column-gap: 2em;
+}
+

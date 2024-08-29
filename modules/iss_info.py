@@ -1,6 +1,7 @@
 import requests
 from flask import Flask, jsonify
 
+
 def get_iss_crew():
     # Placeholder for ISS crew data logic
     try:

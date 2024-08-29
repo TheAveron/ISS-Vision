@@ -1,0 +1,50 @@
+#controls {
+    position: absolute;
+    top: calc(20px + 8vh);
+    left: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+    font-size: 14px;
+    width: 20vw;
+}
+
+#iss-pass-prediction {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+#iss-info-panel {
+    position: absolute;
+    top: calc(20px + 8vh);
+    right: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    width: 15vw;
+}
+
+/* Slider Container */
+.slider-container {
+    margin: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Style the slider itself */
+#trajectory-time-slider {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Optional: Custom style for the label and value */
+#slider-value {
+    font-weight: bold;
+    color: #4CAF50;
+}

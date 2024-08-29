@@ -1,4 +1,6 @@
-import requests, time
+import time
+
+import requests
 
 # Local backup TLE data
 local_tle_name = "ISS"

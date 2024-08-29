@@ -1,5 +1,6 @@
+from datetime import UTC, datetime, timedelta
+
 import ephem
-from datetime import datetime, timedelta, UTC
 
 
 def observer_setup(lat = "40.7128", lon = "-74.0060"):

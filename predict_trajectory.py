@@ -1,5 +1,6 @@
-import ephem
 from datetime import datetime, timedelta
+
+import ephem
 
 # Example TLE data for the ISS
 TLE = [

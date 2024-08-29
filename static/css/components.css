@@ -1,0 +1,12 @@
+#map {
+    height: 92vh;
+    width: 100vw;
+}
+
+.leaflet-left {
+    left: 10px;
+}
+
+.leaflet-top {
+    top: 20vh;
+}
