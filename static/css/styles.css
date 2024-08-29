@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body,
+html {
+    height: 100vh;
+    font-family: 'Roboto', sans-serif;
+}
+
+header {
+    height: 8vh;
+    display: flex;
+    justify-content: center;
+}
+
+.title {
+    display: flex;
+    
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+}
+
+#map {
+    height: 92vh;
+    width: 100vw;
+}
+
+.leaflet-left {
+    left: 10px;
+}
+
+.leaflet-top {
+    top: 15vh;
+}
+
+#controls {
+    position: absolute;
+    top: calc(20px + 8vh);
+    left: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+    font-size: 14px;
+}
+
+#iss-pass-prediction {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+#iss-info-panel {
+    position: absolute;
+    top: calc(20px + 8vh);
+    right: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    width: 200px;
+}
+
+/* Slider Container */
+.slider-container {
+    margin: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Style the slider itself */
+#trajectory-time-slider {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Optional: Custom style for the label and value */
+#slider-value {
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.next-passes-container {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.pass-item {
+    margin-bottom: 10px;
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+}
+
+.pass-item:last-child {
+    border-bottom: none;
+}
