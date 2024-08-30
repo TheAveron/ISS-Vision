@@ -1,16 +1,22 @@
-import time
-from threading import Thread
-from datetime import datetime, timedelta, UTC
 import sqlite3
-from .database import get_db_connection
+import time
+from datetime import UTC, datetime, timedelta
+from threading import Thread
+
 from flask_socketio import emit
+
+from .database import get_db_connection
 
 
 def add_reminder(user_id, pass_time):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO iss_reminders (user_id, pass_time) VALUES (?, ?)",
+        """INSERT INTO iss_reminders (user_id, pass_time) VALUES (?, ?)WHERE NOT EXISTS (
+            SELECT 1
+            FROM iss_reminders
+            WHERE user_id = ? AND pass_time = ?
+        )""",
         (user_id, pass_time),
     )
     conn.commit()

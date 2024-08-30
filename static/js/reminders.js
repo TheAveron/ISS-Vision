@@ -1,6 +1,10 @@
 
 function setReminder(riseTime) {
     const userId = document.getElementById('user-id').value;
+    if (userId == 'None') {
+        alert('You are not connected!');
+        return
+    };
 
     fetch('/add-reminder', {
         method: 'POST',
@@ -35,7 +39,8 @@ function requestNotificationPermission() {
 document.addEventListener('DOMContentLoaded', requestNotificationPermission);
 
 document.addEventListener('DOMContentLoaded', function () {
-    const socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/notifications');
+    // Construct the WebSocket connection URL based on the current window location
+    const socket = io.connect(`${window.location.protocol}//${window.location.host}/notifications`);
 
     socket.on('connect', function () {
         console.log('Connected to WebSocket');

@@ -1,22 +1,18 @@
+import os
 from datetime import UTC, datetime
 
-
-from flask import (
-    Flask,
-    flash,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
-)
-
+from dotenv import load_dotenv
+from flask import (Flask, flash, jsonify, redirect, render_template, request,
+                   session, url_for)
 from flask_socketio import SocketIO
 
 from modules import *
 
+load_dotenv()
+
 app = Flask(__name__)
+
+app.secret_key = os.environ["TOKEN"]
 socketio = SocketIO(app)
 
 init_db()
@@ -122,3 +118,4 @@ def add_reminder_route():
 
 if __name__ == "__main__":
     app.run(debug=False)
+    socketio.run(app)
