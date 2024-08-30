@@ -19,3 +19,41 @@ function setReminder(riseTime) {
             console.error('Error:', error);
         });
 }
+
+function requestNotificationPermission() {
+    if ('Notification' in window) {
+        Notification.requestPermission().then(function (result) {
+            if (result === 'granted') {
+                console.log('Notification permission granted.');
+            } else {
+                console.log('Notification permission denied.');
+            }
+        });
+    }
+}
+// Call the function to request permission on page load
+document.addEventListener('DOMContentLoaded', requestNotificationPermission);
+
+document.addEventListener('DOMContentLoaded', function () {
+    const socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/notifications');
+
+    socket.on('connect', function () {
+        console.log('Connected to WebSocket');
+    });
+
+    socket.on('reminder', function (data) {
+        console.log('Received reminder:', data);
+        const title = "ISS Reminder";
+        const body = `The ISS will pass overhead at ${data.pass_time}.`;
+
+        if (Notification.permission === "granted") {
+            new Notification(title, { body });
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification(title, { body });
+                }
+            });
+        }
+    });
+});

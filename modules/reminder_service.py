@@ -3,6 +3,7 @@ from threading import Thread
 from datetime import datetime, timedelta, UTC
 import sqlite3
 from .database import get_db_connection
+from flask_socketio import emit
 
 
 def add_reminder(user_id, pass_time):
@@ -59,5 +60,10 @@ def start_reminder_checker():
 
 
 def notify_user(user_id, pass_time):
-    # Implementation to send notification to the user
-    print(f"The ISS will pass overhead at {pass_time}")
+    # Send a WebSocket event to the client
+    emit(
+        "reminder",
+        {"user_id": user_id, "pass_time": pass_time},
+        namespace="/notifications",
+    )
+    print(f"Notification sent for user {user_id} at {pass_time}")

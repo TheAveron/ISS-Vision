@@ -1,12 +1,23 @@
 from datetime import UTC, datetime
 
-from flask import (Flask, flash, jsonify, redirect, render_template, request,
-                   session, url_for)
+
+from flask import (
+    Flask,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+
+from flask_socketio import SocketIO
 
 from modules import *
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"  # Needed for session management
+socketio = SocketIO(app)
 
 init_db()
 start_reminder_checker()
@@ -57,10 +68,12 @@ def logout():
     flash("You have been logged out.", "info")
     return redirect(url_for("index"))
 
+
 @app.route("/iss-now")
 def iss_now():
     current_position = get_current_position(TLE)
     return jsonify(current_position)
+
 
 @app.route("/iss-crew")
 def iss_crew():
@@ -108,4 +121,4 @@ def add_reminder_route():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
