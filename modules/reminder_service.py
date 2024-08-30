@@ -1,42 +1,63 @@
-import threading
 import time
-from datetime import datetime
-
+from threading import Thread
+from datetime import datetime, timedelta, UTC
+import sqlite3
 from .database import get_db_connection
 
 
 def add_reminder(user_id, pass_time):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO iss_reminders (user_id, pass_time) VALUES (?, ?)', (user_id, pass_time))
+    cursor.execute(
+        "INSERT INTO iss_reminders (user_id, pass_time) VALUES (?, ?)",
+        (user_id, pass_time),
+    )
     conn.commit()
     conn.close()
 
-# Function to send notification (mocked)
-def send_notification(user_id, message):
-    print(f"Notification to user {user_id}: {message}")
 
-# Background scheduler to check for upcoming passes
 def reminder_checker():
     while True:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        now = datetime.utcnow()
-        cursor.execute('''
-            SELECT id, user_id, pass_time FROM iss_reminders 
-            WHERE notified = 0 AND pass_time <= ?
-        ''', (now,))
-        reminders = cursor.fetchall()
-        
+
+        now = datetime.now(UTC)
+
+        conn = sqlite3.connect("database.db")
+        c = conn.cursor()
+
+        # Find reminders that are within the next 10 minutes and haven't been notified
+        c.execute(
+            """
+                SELECT id, user_id, pass_time FROM iss_reminders 
+                WHERE notified = 0 AND pass_time <= ?
+            """,
+            (now,),
+        )
+
+        reminders = c.fetchall()
+
         for reminder in reminders:
             reminder_id, user_id, pass_time = reminder
-            send_notification(user_id, f"The ISS will pass overhead at {pass_time}")
-            cursor.execute('UPDATE iss_reminders SET notified = 1 WHERE id = ?', (reminder_id,))
-        
+            # Notify the user (this is a placeholder function)
+            notify_user(user_id, pass_time)
+
+            # Mark the reminder as notified
+            c.execute(
+                """
+                    UPDATE iss_reminders SET notified = 1 WHERE id = ?
+                """,
+                (reminder_id,),
+            )
+
         conn.commit()
         conn.close()
         time.sleep(60)  # Check every minute
 
-# Start the background reminder checker in a separate thread
+
 def start_reminder_checker():
-    threading.Thread(target=reminder_checker, daemon=True).start()
+    # Run reminder checker in a separate thread
+    Thread(target=reminder_checker, daemon=True).start()
+
+
+def notify_user(user_id, pass_time):
+    # Implementation to send notification to the user
+    print(f"The ISS will pass overhead at {pass_time}")

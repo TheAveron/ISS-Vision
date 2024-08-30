@@ -6,31 +6,17 @@ function updateISSInfo() {
             fetch('/iss-info')
                 .then(response => response.json())
                 .then(info => {
-                    console.log(info)
-                    document.getElementById('iss-speed').textContent = info.speed;
-                    document.getElementById('iss-altitude').textContent = info.altitude;
+                    document.getElementById('iss-speed').textContent = `${info.speed.toFixed(2)} km/h`;
+                    document.getElementById('iss-altitude').textContent = `${info.altitude.toFixed(2)} km`;
+                })
+                .catch(error => {
+                    console.error('Error fetching ISS info:', error);
+                    document.getElementById('iss-speed').textContent = 'N/A';
+                    document.getElementById('iss-altitude').textContent = 'N/A';
                 });
         })
         .catch(error => console.error('Error fetching ISS info:', error));
 }
-
-document.getElementById('predict-pass').addEventListener('click', function () {
-    // Get the user's location
-    document.getElementById('next-pass').textContent = "Loading...";
-    getUserLocation()
-        .then(coords => {
-            // Fetch the next ISS passes based on the user's location
-            return fetchNextPasses(coords.latitude, coords.longitude);
-        })
-        .then(passes => {
-            // Display the next three passes in the #next-pass element
-            displayNextPasses(passes);
-        })
-        .catch(error => {
-            console.error('Error getting next passes:', error);
-            document.getElementById('next-pass').textContent = 'Could not retrieve the next passes of the ISS.';
-        });
-});
 
 function displayNextPasses(passes) {
     const nextPassElement = document.getElementById('next-pass');
@@ -69,10 +55,49 @@ function displayNextPasses(passes) {
             Rise Time: ${riseTimeFormatted}<br>
             Set Time: ${setTimeFormatted}
         `;
+
+        // Create a "Set Reminder" button
+        const reminderButton = document.createElement('button');
+        reminderButton.textContent = 'Set Reminder';
+        reminderButton.addEventListener('click', () => setReminder(pass.rise_time));
+
+        passInfo.appendChild(reminderButton);
         nextPassElement.appendChild(passInfo);
     });
 }
 
+function setReminder(riseTime) {    
+    const userId = document.getElementById('user-id').value;
+    const passTime = document.getElementById('pass-time').value;
+
+    fetch('/add-reminder', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `user_id=${userId}&pass_time=${passTime}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert('Reminder set successfully!');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+document.getElementById('predict-pass').addEventListener('click', function () {
+    document.getElementById('next-pass').textContent = "Loading...";
+    getUserLocation()
+        .then(coords => fetchNextPasses(coords.latitude, coords.longitude))
+        .then(passes => displayNextPasses(passes))
+        .catch(error => {
+            console.error('Error getting next passes:', error);
+            document.getElementById('next-pass').textContent = 'Could not retrieve the next passes of the ISS.';
+        });
+});
 
 function getUserLocation() {
     return new Promise((resolve, reject) => {
@@ -106,7 +131,8 @@ function fetchCrewInfo() {
                 return;
             }
 
-            const issCrew = data[0].crew;
+            // TO CHECK FOR VALIDITY
+            const issCrew = data.crew;
 
             if (issCrew.length === 0) {
                 crewListElement.innerHTML = '<li>No crew members currently aboard the ISS.</li>';
@@ -124,8 +150,7 @@ function fetchCrewInfo() {
         });
 }
 
-
-// Call the functions to load the data
+// Initial data fetch
 fetchCrewInfo();
 updateISSInfo();
 
