@@ -102,7 +102,6 @@ def add_reminder_route():
     pass_time = request.form[
         "pass_time"
     ]  # Expecting ISO format: '2024-08-30T10:15:00Z'
-
     add_reminder(user_id, pass_time)
 
     return jsonify({"status": "success"}), 200

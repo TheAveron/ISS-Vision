@@ -66,28 +66,6 @@ function displayNextPasses(passes) {
     });
 }
 
-function setReminder(riseTime) {    
-    const userId = document.getElementById('user-id').value;
-    const passTime = document.getElementById('pass-time').value;
-
-    fetch('/add-reminder', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `user_id=${userId}&pass_time=${passTime}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === "success") {
-            alert('Reminder set successfully!');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
-
 document.getElementById('predict-pass').addEventListener('click', function () {
     document.getElementById('next-pass').textContent = "Loading...";
     getUserLocation()
@@ -132,7 +110,7 @@ function fetchCrewInfo() {
             }
 
             // TO CHECK FOR VALIDITY
-            const issCrew = data.crew;
+            const issCrew = data[0].crew;
 
             if (issCrew.length === 0) {
                 crewListElement.innerHTML = '<li>No crew members currently aboard the ISS.</li>';

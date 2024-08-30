@@ -6,7 +6,7 @@ function duplicatePath(path) {
     for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
             duplicatedPaths.push(path.map(([lat, lon]) => [lat, lon + 360 * j]));
-        }
+            }
     }
     return duplicatedPaths;
 }

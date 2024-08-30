@@ -25,14 +25,6 @@
     <p id="iss-crew">Loading crew data...</p>
 </div>
 
-<form id="reminderForm">
-    <label for="pass-time">Select Pass Time:</label>
-    <input type="datetime-local" id="pass-time" name="pass-time" required>
-    <input type="hidden" id="user-id" value="1"> <!-- Assuming a logged-in user -->
-    <button type="submit">Set Reminder</button>
-</form>
-
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="static/js/map.js"></script>
 <script src="static/js/utils.js"></script>
@@ -42,5 +34,8 @@
 <script src="static/js/info.js"></script>
 
 <script src="static/js/reminders.js"></script>
+
+
+<script src="static/js/utils.js"></script>
 
 {% endblock %}

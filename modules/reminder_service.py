@@ -43,7 +43,7 @@ def reminder_checker():
             # Mark the reminder as notified
             c.execute(
                 """
-                    UPDATE iss_reminders SET notified = 1 WHERE id = ?
+                    DELETE FROM iss_reminders WHERE id = ?
                 """,
                 (reminder_id,),
             )

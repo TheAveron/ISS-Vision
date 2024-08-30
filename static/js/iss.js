@@ -3,7 +3,6 @@ function fetchCurrentISSPosition() {
     return fetch('/iss-now')
         .then(response => response.json())
         .then(data => {
-            console.log(data)
             const lat = parseFloat(data.lat);
             const lon = parseFloat(data.lon);
             return [lat, lon];
@@ -16,12 +15,35 @@ function fetchFutureTrajectory(duration) {
         .then(response => response.json());
 }
 
-// Update ISS position and trajectory on the map
+// Global array to store duplicated ISS markers
+let issDuplicateMarkers = [];
+
 function updateISS() {
     fetchCurrentISSPosition()
         .then(currentPosition => {
-            // Update ISS marker position
-            issMarker.setLatLng(currentPosition);
+            // Check if currentPosition is valid
+            if (!Array.isArray(currentPosition) || currentPosition.length !== 2) {
+                console.error('Invalid currentPosition:', currentPosition);
+                return;
+            }
+
+            const [lat, lon] = currentPosition;
+
+            // Update the main ISS marker position
+            issMarker.setLatLng([lat, lon]);
+
+            // Remove any existing duplicated markers from the map
+            issDuplicateMarkers.forEach(marker => map.removeLayer(marker));
+            issDuplicateMarkers = []; // Clear the array
+
+            // Duplicate the ISS marker position for side maps
+            const duplicatedPositions = duplicatePosition([lat, lon]);
+
+            // Create and add new duplicated markers to the map
+            duplicatedPositions.forEach(position => {
+                const duplicateMarker = L.marker(position, {icon: issIcon}).addTo(map);
+                issDuplicateMarkers.push(duplicateMarker);
+            });
 
             // Fetch and draw the future trajectory
             const trajectoryTime = parseFloat(document.getElementById('trajectory-time-slider').value) * 3600;
@@ -32,6 +54,25 @@ function updateISS() {
             }
         })
         .catch(error => console.error('Error fetching ISS data:', error));
+}
+
+// Function to duplicate the ISS marker position across the map
+function duplicatePosition(position) {
+    const duplicatedPositions = [];
+    const [lat, lon] = position;
+
+    // Add the original position
+    duplicatedPositions.push([lat, lon]);
+
+    // Duplicate position with longitude shifts
+    if (lon < 180) {
+        duplicatedPositions.push([lat, lon + 360]); // Shift to the right
+    }
+    if (lon > -180) {
+        duplicatedPositions.push([lat, lon - 360]); // Shift to the left
+    }
+
+    return duplicatedPositions;
 }
 
 // Function to draw the trajectory of the ISS on the map
@@ -68,9 +109,15 @@ function drawTrajectory(trajectoryData) {
     trajectoryPolylines = []; // Clear the array
 
     // Draw the new polylines with changing colors
+    // Draw the new polylines with duplicated paths
     segments.forEach(segment => {
-        const polyline = L.polyline(segment.points, { color: segment.color, dashArray: '5, 10' });
-        polyline.addTo(map);
-        trajectoryPolylines.push(polyline);
+        // Duplicate paths to make them appear on side maps
+        const duplicatedPaths = duplicatePath(segment.points);
+
+        duplicatedPaths.forEach(path => {
+            const polyline = L.polyline(path, { color: segment.color, dashArray: '5, 10' });
+            polyline.addTo(map);
+            trajectoryPolylines.push(polyline);
+        });
     });
 }
