@@ -12,11 +12,19 @@ def add_reminder(user_id, pass_time):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        """INSERT INTO iss_reminders (user_id, pass_time) VALUES (?, ?)WHERE NOT EXISTS (
-            SELECT 1
-            FROM iss_reminders
-            WHERE user_id = ? AND pass_time = ?
-        )""",
+        """
+            WITH params AS (
+                SELECT ? AS user_id, ? AS pass_time
+            )
+            INSERT INTO iss_reminders (user_id, pass_time)
+            SELECT p.user_id, p.pass_time
+            FROM params p
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM iss_reminders
+                WHERE user_id = p.user_id AND pass_time = p.pass_time
+            );
+        """,
         (user_id, pass_time),
     )
     conn.commit()

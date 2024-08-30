@@ -1,6 +1,6 @@
-import time
 import os
-from datetime import datetime , timedelta
+import time
+from datetime import datetime, timedelta
 
 import requests
 
@@ -11,6 +11,7 @@ local_line2 = "2 25544  51.6393 319.3593 0006301 282.8570 136.4539 15.5017799846
 
 CACHE_FILE = "tle_cache.txt"  # Path to the cache file
 CACHE_EXPIRATION = timedelta(days=1)  # Cache duration
+
 
 def fetch_tle_data(
     url="https://www.celestrak.com/NORAD/elements/stations.txt", retries=1, delay=5
@@ -38,7 +39,10 @@ def fetch_tle_data(
 
             return tle_data[0].strip(), tle_data[1].strip(), tle_data[2].strip()
 
-        except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError) as e:
+        except (
+            requests.exceptions.HTTPError,
+            requests.exceptions.ConnectionError,
+        ) as e:
             print(f"Attempt {attempt + 1} failed: {e}")
             if attempt < retries - 1:
                 time.sleep(delay)
