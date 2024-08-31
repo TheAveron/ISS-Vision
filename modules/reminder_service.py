@@ -1,83 +1,61 @@
 import sqlite3
-import time
-from datetime import UTC, datetime, timedelta
-from threading import Thread
-
+from datetime import datetime, timezone
+from threading import Timer
 from flask_socketio import emit
-
 from .database import get_db_connection
 
-
 def add_reminder(user_id, pass_time):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-            WITH params AS (
-                SELECT ? AS user_id, ? AS pass_time
-            )
-            INSERT INTO iss_reminders (user_id, pass_time)
-            SELECT p.user_id, p.pass_time
-            FROM params p
-            WHERE NOT EXISTS (
-                SELECT 1
-                FROM iss_reminders
-                WHERE user_id = p.user_id AND pass_time = p.pass_time
-            );
-        """,
-        (user_id, pass_time),
-    )
-    conn.commit()
-    conn.close()
-
+    """
+    Adds a reminder for a user at a specified pass time.
+    Ensures that duplicate reminders are not added.
+    """
+    query = """
+        INSERT INTO iss_reminders (user_id, pass_time)
+        SELECT ?, ?
+        WHERE NOT EXISTS (
+            SELECT 1 FROM iss_reminders WHERE user_id = ? AND pass_time = ?
+        );
+    """
+    with get_db_connection() as conn:
+        conn.execute(query, (user_id, pass_time, user_id, pass_time))
+        conn.commit()
 
 def reminder_checker():
-    while True:
+    """
+    Checks for reminders that need to be triggered and notifies users.
+    Deletes the reminder after notifying the user.
+    """
+    now = datetime.utcnow().replace(tzinfo=timezone.utc)
+    query = """
+        SELECT id, user_id, pass_time FROM iss_reminders 
+        WHERE notified = 0 AND pass_time <= ?
+    """
 
-        now = datetime.now(UTC)
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.execute(query, (now,))
+            reminders = cursor.fetchall()
 
-        conn = sqlite3.connect("database.db")
-        c = conn.cursor()
+            for reminder_id, user_id, pass_time in reminders:
+                notify_user(user_id, pass_time)
+                conn.execute("DELETE FROM iss_reminders WHERE id = ?", (reminder_id,))
+            conn.commit()
 
-        # Find reminders that are within the next 10 minutes and haven't been notified
-        c.execute(
-            """
-                SELECT id, user_id, pass_time FROM iss_reminders 
-                WHERE notified = 0 AND pass_time <= ?
-            """,
-            (now,),
-        )
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
 
-        reminders = c.fetchall()
-
-        for reminder in reminders:
-            reminder_id, user_id, pass_time = reminder
-            # Notify the user (this is a placeholder function)
-            notify_user(user_id, pass_time)
-
-            # Mark the reminder as notified
-            c.execute(
-                """
-                    DELETE FROM iss_reminders WHERE id = ?
-                """,
-                (reminder_id,),
-            )
-
-        conn.commit()
-        conn.close()
-        time.sleep(60)  # Check every minute
-
+    # Schedule the next check after 60 seconds
+    Timer(60, reminder_checker).start()
 
 def start_reminder_checker():
-    # Run reminder checker in a separate thread
-    Thread(target=reminder_checker, daemon=True).start()
-
+    """
+    Initiates the reminder checking loop.
+    """
+    reminder_checker()
 
 def notify_user(user_id, pass_time):
-    # Send a WebSocket event to the client
-    emit(
-        "reminder",
-        {"user_id": user_id, "pass_time": pass_time},
-        namespace="/notifications",
-    )
+    """
+    Sends a WebSocket notification to the user about the ISS pass time.
+    """
+    emit("reminder", {"user_id": user_id, "pass_time": pass_time}, namespace="/notifications")
     print(f"Notification sent for user {user_id} at {pass_time}")
