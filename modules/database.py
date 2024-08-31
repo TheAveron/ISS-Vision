@@ -1,10 +1,14 @@
 import sqlite3
+from typing import Optional
 
 DATABASE_FILE = "database.db"
 
-def init_db():
+
+def init_db() -> None:
     """
     Initializes the database by creating the necessary tables if they do not exist.
+
+    This function creates the `iss_reminders` and `users` tables if they are not already present.
     """
     with sqlite3.connect(DATABASE_FILE) as conn:
         cursor = conn.cursor()
@@ -35,8 +39,11 @@ def init_db():
         conn.commit()
 
 
-def get_db_connection():
+def get_db_connection() -> sqlite3.Connection:
     """
-    Returns a new connection to the database.
+    Creates and returns a new connection to the database.
+
+    Returns:
+        sqlite3.Connection: A new database connection.
     """
     return sqlite3.connect(DATABASE_FILE)

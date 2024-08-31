@@ -1,6 +1,8 @@
 import os
 import time
 from datetime import datetime, timedelta
+from typing import List, Tuple
+
 import requests
 
 # Local backup TLE data
@@ -15,11 +17,24 @@ CACHE_EXPIRATION = timedelta(days=1)  # Cache duration
 
 
 def fetch_tle_data(
-    url="https://www.celestrak.com/NORAD/elements/stations.txt", retries=3, delay=5
-):
+    url: str = "https://www.celestrak.com/NORAD/elements/stations.txt",
+    retries: int = 3,
+    delay: int = 5,
+) -> Tuple[str, str, str]:
     """
     Fetch the latest TLE data from the specified URL or use cached data if available and valid.
     If all fetch attempts fail, fallback to local TLE data.
+
+    Args:
+        url (str): The URL from which to fetch the TLE data.
+        retries (int): The number of retry attempts for fetching the data.
+        delay (int): The delay in seconds between retry attempts.
+
+    Returns:
+        Tuple[str, str, str]: A tuple containing the TLE name, line1, and line2.
+
+    Raises:
+        requests.exceptions.RequestException: If there is an error fetching data from the API.
     """
     if is_cache_valid():
         return read_cached_tle()
@@ -34,7 +49,10 @@ def fetch_tle_data(
                 cache_tle_data(tle_data)
                 return tle_data[0].strip(), tle_data[1].strip(), tle_data[2].strip()
 
-        except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError) as e:
+        except (
+            requests.exceptions.HTTPError,
+            requests.exceptions.ConnectionError,
+        ) as e:
             print(f"Attempt {attempt + 1} failed: {e}")
             if attempt < retries - 1:
                 time.sleep(delay)
@@ -43,9 +61,12 @@ def fetch_tle_data(
     return LOCAL_TLE["name"], LOCAL_TLE["line1"], LOCAL_TLE["line2"]
 
 
-def is_cache_valid():
+def is_cache_valid() -> bool:
     """
     Check if the cache file exists and is within the expiration period.
+
+    Returns:
+        bool: True if the cache file exists and is still valid, False otherwise.
     """
     if os.path.exists(CACHE_FILE):
         file_mod_time = datetime.fromtimestamp(os.path.getmtime(CACHE_FILE))
@@ -53,9 +74,12 @@ def is_cache_valid():
     return False
 
 
-def read_cached_tle():
+def read_cached_tle() -> Tuple[str, str, str]:
     """
     Read the TLE data from the cache file.
+
+    Returns:
+        Tuple[str, str, str]: A tuple containing the TLE name, line1, and line2.
     """
     with open(CACHE_FILE, "r") as file:
         tle_data = file.readlines()
@@ -64,9 +88,12 @@ def read_cached_tle():
     return LOCAL_TLE["name"], LOCAL_TLE["line1"], LOCAL_TLE["line2"]
 
 
-def cache_tle_data(tle_data):
+def cache_tle_data(tle_data: List[str]) -> None:
     """
     Cache the TLE data to a file.
+
+    Args:
+        tle_data (List[str]): A list containing the TLE data lines.
     """
     with open(CACHE_FILE, "w") as file:
         file.write("\n".join(tle_data[:3]))

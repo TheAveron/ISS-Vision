@@ -1,16 +1,18 @@
 import os
 from datetime import datetime, timezone
+from typing import Tuple, Union
+
 from dotenv import load_dotenv
-from flask import (
-    Flask, flash, jsonify, redirect, render_template, request,
-    session, url_for
-)
+from flask import (Flask, flash, jsonify, redirect, render_template, request,
+                   url_for)
 from flask_socketio import SocketIO
-from modules import (
-    init_db, start_reminder_checker, fetch_tle_data, get_logged_in_user,
-    register_user, verify_user, login_user, logout_user, get_current_position,
-    get_iss_crew, get_future_positions, get_iss_info, get_next_passes, add_reminder
-)
+from werkzeug import Response
+
+from modules import (add_reminder, fetch_tle_data, get_current_position,
+                     get_future_positions, get_iss_crew, get_iss_info,
+                     get_logged_in_user, get_next_passes, init_db, login_user,
+                     logout_user, register_user, start_reminder_checker,
+                     verify_user)
 
 # Load environment variables
 load_dotenv()
@@ -25,15 +27,27 @@ init_db()
 start_reminder_checker()
 TLE = fetch_tle_data()
 
+
 @app.route("/")
-def index():
-    """Render the home page with the current user's ID."""
+def index() -> str:
+    """
+    Renders the home page with the current user's ID.
+
+    Returns:
+        str: Rendered HTML template for the index page.
+    """
     user_id = get_logged_in_user()
     return render_template("index.html", user_id=user_id)
 
+
 @app.route("/register", methods=["GET", "POST"])
-def register():
-    """Handle user registration."""
+def register() -> Union[str, Response]:
+    """
+    Handles user registration.
+
+    Returns:
+        Union[str, Response]: Rendered HTML template for the registration page or redirect to the login page.
+    """
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -46,9 +60,15 @@ def register():
 
     return render_template("register.html")
 
+
 @app.route("/login", methods=["GET", "POST"])
-def login():
-    """Handle user login."""
+def login() -> Union[str, Response]:
+    """
+    Handles user login.
+
+    Returns:
+        Union[str, Response]: Rendered HTML template for the login page or redirect to the index page.
+    """
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -63,58 +83,105 @@ def login():
 
     return render_template("login.html")
 
+
 @app.route("/logout")
-def logout():
-    """Log out the current user."""
+def logout() -> Response:
+    """
+    Logs out the current user.
+
+    Returns:
+        str: Redirect to the index page.
+    """
     logout_user()
     flash("You have been logged out.", "info")
     return redirect(url_for("index"))
 
+
 @app.route("/iss-now")
-def iss_now():
-    """Return the current position of the ISS."""
+def iss_now() -> Tuple[Response, int]:
+    """
+    Returns the current position of the ISS.
+
+    Returns:
+        Tuple[Response, int]: JSON response containing the ISS position and HTTP status code.
+    """
     current_position = get_current_position(TLE)
-    return jsonify(current_position)
+    return jsonify(current_position), 200
+
 
 @app.route("/iss-crew")
-def iss_crew():
-    """Return the current crew members on the ISS."""
+def iss_crew() -> Tuple[Response, int]:
+    """
+    Returns the current crew members on the ISS.
+
+    Returns:
+        Tuple[Response, int]: JSON response containing the ISS crew and HTTP status code.
+    """
     iss_crew_data, status_code = get_iss_crew()
     return jsonify(iss_crew_data), status_code
 
+
 @app.route("/future-trajectory")
-def future_trajectory():
-    """Return the future trajectory of the ISS."""
+def future_trajectory() -> Tuple[Response, int]:
+    """
+    Returns the future trajectory of the ISS.
+
+    Returns:
+        Tuple[Response, int]: JSON response containing the future positions and HTTP status code.
+    """
     start_time = datetime.now(timezone.utc)
-    duration = float(request.args.get("duration", 3600))  # Default to 1 hour
+    duration = int(request.args.get("duration", 3600))  # Default to 1 hour
     interval = 60  # Calculate every 60 seconds
     future_positions = get_future_positions(TLE, start_time, duration, interval)
-    return jsonify(future_positions)
+    return jsonify(future_positions), 200
+
 
 @app.route("/iss-info")
-def iss_info():
-    """Return detailed information about the ISS."""
+def iss_info() -> Tuple[Response, int]:
+    """
+    Returns detailed information about the ISS.
+
+    Returns:
+        Tuple[Response, int]: JSON response containing the ISS information and HTTP status code.
+    """
     info = get_iss_info(TLE)
-    return jsonify(info)
+    return jsonify(info), 200
+
 
 @app.route("/next-passes", methods=["GET"])
-def next_passes():
-    """Return the next passes of the ISS over a given location."""
-    lat = request.args.get("lat", type=float)
-    lon = request.args.get("lon", type=float)
+def next_passes() -> Tuple[Response, int]:
+    """
+    Returns the next passes of the ISS over a given location.
+
+    Returns:
+        Tuple[Response, int]: JSON response containing the next passes and HTTP status code.
+    """
+    lat = request.args.get("lat", type=str)
+    lon = request.args.get("lon", type=str)
     if lat is None or lon is None:
         return jsonify({"error": "Invalid coordinates"}), 400
 
     passes = get_next_passes(TLE, lat, lon, num_passes=3)
-    return jsonify(passes)
+    return jsonify(passes), 200
+
 
 @app.route("/add-reminder", methods=["POST"])
-def add_reminder_route():
-    """Add a reminder for a specific ISS pass time."""
+def add_reminder_route() -> Tuple[Response, int]:
+    """
+    Adds a reminder for a specific ISS pass time.
+
+    Returns:
+        Tuple[Response, int]: JSON response with status and HTTP status code.
+    """
     user_id = request.form["user_id"]
-    pass_time = request.form["pass_time"]  # ISO format: '2024-08-30T10:15:00Z'
+    pass_time_str = request.form["pass_time"]  # ISO format: '2024-08-30T10:15:00Z'
+
+    # Convert ISO 8601 string to datetime object
+    pass_time = datetime.fromisoformat(pass_time_str.rstrip("Z"))
+
     add_reminder(user_id, pass_time)
     return jsonify({"status": "success"}), 200
+
 
 if __name__ == "__main__":
     app.run(debug=False)
