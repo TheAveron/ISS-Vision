@@ -7,11 +7,11 @@ from flask import (Flask, flash, jsonify, redirect, render_template, request,
                    url_for)
 from werkzeug import Response
 
-from modules import ( fetch_tle_data, get_current_position,
+from modules import (fetch_tle_data, get_current_position,
                      get_future_positions, get_iss_crew, get_iss_info,
-                     get_logged_in_user, get_next_passes, init_db, login_user,
-                     logout_user, register_user,
-                     verify_user)
+                     get_logged_in_user, get_next_passes, init_db,
+                     load_specific_map_settings, login_user, logout_user,
+                     register_user, save_specific_map_settings, verify_user)
 
 # Load environment variables
 load_dotenv()
@@ -160,6 +160,43 @@ def next_passes() -> Tuple[Response, int]:
 
     passes = get_next_passes(TLE, lat, lon, num_passes=3)
     return jsonify(passes), 200
+
+
+@app.route("/save-map-settings", methods=["POST"])
+def save_map_settings():
+    user_id = request.json["userId"]  # type:ignore
+    if not user_id:
+        return jsonify({"error": "User not logged in"}), 401
+
+    data = request.json
+    save_specific_map_settings(user_id, data["toggle_iss"], data["toggle_trajectory"], data["trajectory_time"], data["zoom_level"])  # type: ignore
+
+    return jsonify({"status": "success"}), 200
+
+
+@app.route("/load-map-settings", methods=["GET", "POST"])
+def load_map_settings():
+    print("eeeeee")
+    user_id = request.form["user_id"]
+    if not user_id:
+        return jsonify({"error": "User not logged in"}), 401
+
+    settings = load_specific_map_settings(user_id)
+    if settings:
+        return (
+            jsonify(
+                {
+                    "toggle_iss": settings[0],
+                    "toggle_trajectory": settings[1],
+                    "trajectory_time": settings[2],
+                    "zoom_level": settings[3],
+                }
+            ),
+            200,
+        )
+    else:
+        return jsonify({"error": "No settings found"}), 404
+
 
 if __name__ == "__main__":
     app.run(debug=False)

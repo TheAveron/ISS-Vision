@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 from typing import Optional
 
 from flask import session
@@ -76,3 +77,43 @@ def get_logged_in_user() -> Optional[int]:
         Optional[int]: The user ID if logged in, None otherwise.
     """
     return session.get("user_id")
+
+
+def save_specific_map_settings(
+    user_id, toggle_iss, toggle_trajectory, trajectory_time, zoom_level
+):
+    with get_db_connection() as con:
+        cur = con.cursor()
+        cur.execute(
+            """
+            INSERT INTO user_settings (user_id, toggle_iss, toggle_trajectory, trajectory_time, zoom_level, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                toggle_iss = excluded.toggle_iss,
+                toggle_trajectory = excluded.toggle_trajectory,
+                trajectory_time = excluded.trajectory_time,
+                zoom_level = excluded.zoom_level,
+                timestamp = excluded.timestamp
+        """,
+            (
+                user_id,
+                toggle_iss,
+                toggle_trajectory,
+                trajectory_time,
+                zoom_level,
+                datetime.now(),
+            ),
+        )
+        con.commit()
+
+
+def load_specific_map_settings(user_id):
+    with get_db_connection() as con:
+        data = con.execute(
+            """
+            SELECT toggle_iss, toggle_trajectory, trajectory_time, zoom_level
+            FROM user_settings WHERE user_id = ?
+        """,
+            (user_id,),
+        )
+        return data.fetchone()
