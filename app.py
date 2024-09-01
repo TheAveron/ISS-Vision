@@ -5,26 +5,23 @@ from typing import Tuple, Union
 from dotenv import load_dotenv
 from flask import (Flask, flash, jsonify, redirect, render_template, request,
                    url_for)
-from flask_socketio import SocketIO
 from werkzeug import Response
 
-from modules import (add_reminder, fetch_tle_data, get_current_position,
+from modules import ( fetch_tle_data, get_current_position,
                      get_future_positions, get_iss_crew, get_iss_info,
                      get_logged_in_user, get_next_passes, init_db, login_user,
-                     logout_user, register_user, start_reminder_checker,
+                     logout_user, register_user,
                      verify_user)
 
 # Load environment variables
 load_dotenv()
 
-# Flask app and SocketIO initialization
+# Flask app initialization
 app = Flask(__name__)
 app.secret_key = os.getenv("TOKEN")
-socketio = SocketIO(app)
 
 # Initialize database and start background processes
 init_db()
-start_reminder_checker()
 TLE = fetch_tle_data()
 
 
@@ -164,25 +161,5 @@ def next_passes() -> Tuple[Response, int]:
     passes = get_next_passes(TLE, lat, lon, num_passes=3)
     return jsonify(passes), 200
 
-
-@app.route("/add-reminder", methods=["POST"])
-def add_reminder_route() -> Tuple[Response, int]:
-    """
-    Adds a reminder for a specific ISS pass time.
-
-    Returns:
-        Tuple[Response, int]: JSON response with status and HTTP status code.
-    """
-    user_id = request.form["user_id"]
-    pass_time_str = request.form["pass_time"]  # ISO format: '2024-08-30T10:15:00Z'
-
-    # Convert ISO 8601 string to datetime object
-    pass_time = datetime.fromisoformat(pass_time_str.rstrip("Z"))
-
-    add_reminder(user_id, pass_time)
-    return jsonify({"status": "success"}), 200
-
-
 if __name__ == "__main__":
     app.run(debug=False)
-    socketio.run(app)

@@ -8,22 +8,10 @@ def init_db() -> None:
     """
     Initializes the database by creating the necessary tables if they do not exist.
 
-    This function creates the `iss_reminders` and `users` tables if they are not already present.
+    This function creates the `users` table if it's not already present.
     """
     with sqlite3.connect(DATABASE_FILE) as conn:
         cursor = conn.cursor()
-
-        # Create iss_reminders table
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS iss_reminders (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                pass_time DATETIME,
-                notified BOOLEAN DEFAULT 0
-            )
-            """
-        )
 
         # Create users table
         cursor.execute(

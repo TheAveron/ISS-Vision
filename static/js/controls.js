@@ -40,7 +40,7 @@ const sliderValueDisplay = document.getElementById('slider-value');
 
 function SlideBar_update() {
     sliderValueDisplay.textContent = trajectorySlider.value;
-    updateTrajectoryDuration(trajectorySlider.value * 3600); // Convert hours to seconds
+    updateTrajectoryDuration(Math.round(trajectorySlider.value * 3600)); // Convert hours to seconds
 }
 
 SlideBar_update()

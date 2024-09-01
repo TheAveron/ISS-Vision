@@ -55,13 +55,6 @@ function displayNextPasses(passes) {
             Rise Time: ${riseTimeFormatted}<br>
             Set Time: ${setTimeFormatted}
         `;
-
-        // Create a "Set Reminder" button
-        const reminderButton = document.createElement('button');
-        reminderButton.textContent = 'Set Reminder';
-        reminderButton.addEventListener('click', () => setReminder(pass.rise_time));
-
-        passInfo.appendChild(reminderButton);
         nextPassElement.appendChild(passInfo);
     });
 }
@@ -109,8 +102,7 @@ function fetchCrewInfo() {
                 return;
             }
 
-            // TO CHECK FOR VALIDITY
-            const issCrew = data[0].crew;
+            const issCrew = data.crew;
 
             if (issCrew.length === 0) {
                 crewListElement.innerHTML = '<li>No crew members currently aboard the ISS.</li>';

@@ -8,19 +8,6 @@ header {
     place-items: center;    
 }
 
-#map {
-    height: 92vh;
-    width: 100vw;
-}
-
-.leaflet-left {
-    left: 10px;
-}
-
-.leaflet-top {
-    top: 15vh;
-}
-
 .navbar {
     display: flex;
     flex-direction: row;
