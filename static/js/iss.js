@@ -53,7 +53,7 @@ function updateISS() {
 
             // Fetch and draw the future trajectory
             const trajectoryTime = parseFloat(document.getElementById('trajectory-time-slider').value) * 3600;
-            if (trajectoryVisible) {
+            if (document.getElementById('toggle-trajectory').checked) {
                 fetchFutureTrajectory(trajectoryTime)
                     .then(futurePositions => drawTrajectory(futurePositions))
                     .catch(error => console.error('Error processing future trajectory data:', error));

@@ -9,7 +9,6 @@ document.getElementById('toggle-iss').addEventListener('change', function () {
         issDuplicateMarkers.forEach(marker => map.removeLayer(marker));
     }
 });
-let trajectoryVisible;
 
 document.getElementById('toggle-trajectory').addEventListener('change', function () {
     if (!this.checked) {
@@ -20,14 +19,12 @@ document.getElementById('toggle-trajectory').addEventListener('change', function
 });
 
 function enable_trajectory() {
-    trajectoryVisible = true;
     document.getElementById('toggle-trajectory').innerText = 'Hide Trajectory';
     document.getElementById("slider-container").style.display = "block";
     trajectoryPolylines.forEach(polyline => polyline.addTo(map));
 };
 
 function disable_trajectory() {
-    trajectoryVisible = false
     document.getElementById('toggle-trajectory').innerText = 'Show Trajectory';
     document.getElementById("slider-container").style.display = "none";
     trajectoryPolylines.forEach(polyline => map.removeLayer(polyline));
