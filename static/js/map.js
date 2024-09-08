@@ -61,6 +61,12 @@ function loadMapSettings() {
                 document.getElementById('toggle-iss').checked = settings.toggle_iss;
                 document.getElementById('toggle-trajectory').checked = settings.toggle_trajectory;
                 document.getElementById('trajectory-time-slider').value = settings.trajectory_time;
+                if (settings.toggle_trajectory) {
+                    document.getElementById("slider-container").style.display = "block";
+                }
+                else {
+                    document.getElementById("slider-container").style.display = "none";
+                }
                 map.setZoom(settings.zoom_level);
 
                 // Apply the settings (e.g., show/hide ISS, trajectory based on toggles)

@@ -19,6 +19,12 @@ function fetchFutureTrajectory(duration) {
 let issDuplicateMarkers = [];
 
 function updateISS() {
+    iss = document.getElementById('toggle-iss')
+
+    if (!iss.checked) {
+        return;
+    }
+
     fetchCurrentISSPosition()
         .then(currentPosition => {
             // Check if currentPosition is valid
@@ -47,7 +53,7 @@ function updateISS() {
 
             // Fetch and draw the future trajectory
             const trajectoryTime = parseFloat(document.getElementById('trajectory-time-slider').value) * 3600;
-            if (document.getElementById('toggle-trajectory').checked) {
+            if (trajectoryVisible) {
                 fetchFutureTrajectory(trajectoryTime)
                     .then(futurePositions => drawTrajectory(futurePositions))
                     .catch(error => console.error('Error processing future trajectory data:', error));

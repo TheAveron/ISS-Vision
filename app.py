@@ -176,7 +176,6 @@ def save_map_settings():
 
 @app.route("/load-map-settings", methods=["GET", "POST"])
 def load_map_settings():
-    print("eeeeee")
     user_id = request.form["user_id"]
     if not user_id:
         return jsonify({"error": "User not logged in"}), 401

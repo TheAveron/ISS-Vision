@@ -1,32 +1,37 @@
 // controls.js
 
 // Toggle ISS marker visibility
-document.getElementById('toggle-iss').addEventListener('change', function() {
+document.getElementById('toggle-iss').addEventListener('change', function () {
     if (this.checked) {
-        issMarker.addTo(map);
+        updateISS();
     } else {
         map.removeLayer(issMarker);
+        issDuplicateMarkers.forEach(marker => map.removeLayer(marker));
     }
 });
+let trajectoryVisible;
 
-// Assuming trajectoryPolylines is an array that holds all the trajectory line objects
-let trajectoryVisible = true;
-
-document.getElementById('toggle-trajectory').addEventListener('click', () => {
-    if (trajectoryVisible) {
-        // Hide all trajectory lines
-        trajectoryPolylines.forEach(polyline => map.removeLayer(polyline));
-        trajectoryVisible = false;
-        document.getElementById('toggle-trajectory').innerText = 'Show Trajectory';
-        document.getElementById("slider-container").style.display = "none";
+document.getElementById('toggle-trajectory').addEventListener('change', function () {
+    if (!this.checked) {
+        disable_trajectory()
     } else {
-        // Show all trajectory lines
-        trajectoryPolylines.forEach(polyline => polyline.addTo(map));
-        trajectoryVisible = true;
-        document.getElementById('toggle-trajectory').innerText = 'Hide Trajectory';
-        document.getElementById("slider-container").style.display = "block";
+        enable_trajectory()
     }
 });
+
+function enable_trajectory() {
+    trajectoryVisible = true;
+    document.getElementById('toggle-trajectory').innerText = 'Hide Trajectory';
+    document.getElementById("slider-container").style.display = "block";
+    trajectoryPolylines.forEach(polyline => polyline.addTo(map));
+};
+
+function disable_trajectory() {
+    trajectoryVisible = false
+    document.getElementById('toggle-trajectory').innerText = 'Show Trajectory';
+    document.getElementById("slider-container").style.display = "none";
+    trajectoryPolylines.forEach(polyline => map.removeLayer(polyline));
+};
 
 // Update ISS position and trajectory every 10 seconds
 updateISS()
@@ -46,7 +51,7 @@ function SlideBar_update() {
 SlideBar_update()
 
 // Update the display whenever the slider value changes
-trajectorySlider.addEventListener('input', function() {
+trajectorySlider.addEventListener('input', function () {
     SlideBar_update()
 });
 
