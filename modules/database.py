@@ -14,19 +14,16 @@ def init_db() -> None:
         cursor = conn.cursor()
 
         # Create users table
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL
             )
-            """
-        )
+            """)
 
         # create the users_settings table
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS user_settings (
                 user_id INTEGER PRIMARY KEY,
                 toggle_iss BOOLEAN,
@@ -36,8 +33,7 @@ def init_db() -> None:
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(user_id) REFERENCES users(id)
             );
-            """
-        )
+            """)
 
         conn.commit()
 

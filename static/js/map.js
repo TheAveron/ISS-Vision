@@ -6,7 +6,7 @@ var map = L.map('map').setView([0, 0], 2);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '© OpenStreetMap contributors'
-}).addTo(map); 
+}).addTo(map);
 
 var issIcon = L.icon({
     iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d0/International_Space_Station.svg', // Replace with an actual ISS icon URL
@@ -14,12 +14,15 @@ var issIcon = L.icon({
     iconAnchor: [25, 25]
 });
 
-var issMarker = L.marker([0, 0], {icon: issIcon}).addTo(map);
+var issMarker = L.marker([0, 0], { icon: issIcon }).addTo(map);
 var trajectoryPolylines = [];
 
 function saveMapSettings() {
+    const userId = document.getElementById('user-id').value;
+    if (!userId) return; // settings are only saved for logged-in users
+
     const mapSettings = {
-        userId: document.getElementById('user-id').value,
+        userId: userId,
         toggle_iss: document.getElementById('toggle-iss').checked,
         toggle_trajectory: document.getElementById('toggle-trajectory').checked,
         trajectory_time: document.getElementById('trajectory-time-slider').value,
@@ -33,12 +36,12 @@ function saveMapSettings() {
         },
         body: JSON.stringify(mapSettings)
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status !== 'success') {
-            console.error('Failed to save map settings:', data);
-        }
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                console.error('Failed to save map settings:', data);
+            }
+        });
 }
 
 // Attach saveMapSettings to relevant events like zoom, toggle, and slider change events
@@ -48,12 +51,15 @@ document.getElementById('trajectory-time-slider').addEventListener('input', save
 map.on('zoomend', saveMapSettings);
 
 function loadMapSettings() {
+    const userId = document.getElementById('user-id').value;
+    if (!userId) return; // anonymous visitor: nothing to load
+
     fetch('/load-map-settings', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `user_id=${document.getElementById('user-id').value}`,
+        body: `user_id=${userId}`,
     })
         .then(response => response.json())
         .then(settings => {
@@ -76,37 +82,31 @@ function loadMapSettings() {
         .catch(error => console.error('Error loading map settings:', error));
 }
 
+// Restore the saved controls and apply them to the Leaflet map
 function applySettings(settings) {
-    // Toggle ISS and trajectory visibility
-    toggleVisibility(issMarker, settings.toggle_iss);
-    toggleVisibility(trajectoryPath, settings.toggle_trajectory);
+    const issCheckbox = document.getElementById('toggle-iss');
+    const trajectoryCheckbox = document.getElementById('toggle-trajectory');
+    const slider = document.getElementById('trajectory-time-slider');
 
-    // Adjust trajectory time
-    adjustTrajectoryTime(settings.trajectory_time);
+    issCheckbox.checked = Boolean(settings.toggle_iss);
+    trajectoryCheckbox.checked = Boolean(settings.toggle_trajectory);
+    slider.value = settings.trajectory_time;
+    map.setZoom(settings.zoom_level);
 
-    // Set map zoom level
-    if (map) {
-        map.setZoom(settings.zoom_level);
+    // ISS icon
+    if (!issCheckbox.checked) {
+        map.removeLayer(issMarker);
     }
-}
 
-// Generic function to toggle visibility for markers or paths
-function toggleVisibility(object, isVisible) {
-    if (object) {
-        object.setVisible(isVisible);
+    // Trajectory: keep the state used by controls.js in sync with the checkbox
+    if (trajectoryCheckbox.checked) {
+        SlideBar_update(); // updates the label and redraws with the saved duration
+    } else {
+        trajectoryPolylines.forEach(polyline => map.removeLayer(polyline));
+        trajectoryVisible = false;
+        document.getElementById('slider-container').style.display = 'none';
+        document.getElementById('slider-value').textContent = slider.value;
     }
-}
-
-// Adjust the trajectory time based on the saved slider value
-function adjustTrajectoryTime(time) {
-    fetch(`/future-trajectory?duration=${time}`)
-        .then(response => response.json())
-        .then(data => {
-            if (trajectoryPath) {
-                trajectoryPath.setPath(data);
-            }
-        })
-        .catch(error => console.error('Error fetching future trajectory:', error));
 }
 
 

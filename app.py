@@ -164,7 +164,7 @@ def next_passes() -> Tuple[Response, int]:
 
 @app.route("/save-map-settings", methods=["POST"])
 def save_map_settings():
-    user_id = request.json["userId"]  # type:ignore
+    user_id = request.json["userId"]  # type: ignore
     if not user_id:
         return jsonify({"error": "User not logged in"}), 401
 

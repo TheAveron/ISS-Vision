@@ -83,6 +83,9 @@ function duplicatePosition(position) {
 
 // Function to draw the trajectory of the ISS on the map
 function drawTrajectory(trajectoryData) {
+    // Do nothing while the trajectory is hidden (state is kept in controls.js)
+    if (typeof trajectoryVisible !== 'undefined' && !trajectoryVisible) return;
+
     let trajectoryPoints = [];
     let previousPoint = null;
     let segments = [];

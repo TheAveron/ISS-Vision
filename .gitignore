@@ -160,3 +160,7 @@ cython_debug/
 #.idea/
 
 reminders_future/
+
+# Local runtime data
+database.db
+tle_cache.txt
