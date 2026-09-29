@@ -65,8 +65,8 @@ def get_current_position(tle: Tuple[str, str, str]) -> Dict[str, float]:
     satellite = ephem.readtle(*tle)
     satellite.compute(observer)
     return {
-        "lat": satellite.sublat * 180.0 / ephem.pi,
-        "lon": satellite.sublong * 180.0 / ephem.pi,
+        "lat": satellite.sublat * 180.0 / ephem.pi,  # type: ignore
+        "lon": satellite.sublong * 180.0 / ephem.pi,  # type: ignore
     }
 
 
@@ -93,8 +93,8 @@ def get_future_positions(
         satellite.compute(current_time)
         positions.append(
             {
-                "lat": satellite.sublat * 180.0 / ephem.pi,
-                "lon": satellite.sublong * 180.0 / ephem.pi,
+                "lat": satellite.sublat * 180.0 / ephem.pi,  # type: ignore
+                "lon": satellite.sublong * 180.0 / ephem.pi,  # type: ignore
             }
         )
         current_time += timedelta(seconds=interval)
@@ -117,8 +117,8 @@ def get_iss_info(tle: Tuple[str, str, str]) -> Dict[str, Union[float, str]]:
     satellite.compute(observer)
 
     return {
-        "latitude": satellite.sublat * 180.0 / ephem.pi,
-        "longitude": satellite.sublong * 180.0 / ephem.pi,
+        "latitude": satellite.sublat * 180.0 / ephem.pi,  # type: ignore
+        "longitude": satellite.sublong * 180.0 / ephem.pi,  # type: ignore
         "altitude": round(satellite.elevation / 1000.0, 2),  # Convert to km
         "speed": round(orbital_speed_kmh(satellite), 2),  # km/h
         "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -148,10 +148,10 @@ def get_next_passes(
         next_pass = observer.next_pass(satellite)
         passes.append(
             {
-                "rise_time": next_pass[0].datetime().strftime("%Y-%m-%d %H:%M:%S UTC"),
-                "set_time": next_pass[4].datetime().strftime("%Y-%m-%d %H:%M:%S UTC"),
+                "rise_time": next_pass[0].datetime().strftime("%Y-%m-%d %H:%M:%S UTC"),  # type: ignore
+                "set_time": next_pass[4].datetime().strftime("%Y-%m-%d %H:%M:%S UTC"),  # type: ignore
             }
         )
-        observer.date = next_pass[4] + ephem.minute  # Move time forward
+        observer.date = next_pass[4] + ephem.minute  # Move time forward  # type: ignore
 
     return passes

@@ -1,32 +1,80 @@
-# ISS-explorer
+# 🛰️ ISS Vision
 
-## Description
+**A live web tracker for the International Space Station: where it is now, where it's going, and when it passes over you.**
 
-This site his my final project to the Harvard's CS50 course.
+Final project of Harvard's [CS50x](https://cs50.harvard.edu/x/) · Python 3.12 · Flask · SQLite · Leaflet
 
-This is a website made in python 3.12 with Flask that shows the current position of the iss around the world and it future trajectory.
+<!-- TODO: add a screenshot or a short GIF of the main map view -->
+![ISS Vision main view](docs/screenshot.png)
 
-There is also some complementary informations, like the crew actually on board, the speed, the altitude, and a calculator of the next three passes near your location (needs you to allow acces to geolocation of course).
+🎥 **[Video presentation](https://youtu.be/86QOJ3cgrl4)**
 
-I have separated all my files in different folders, putting the python scripts in a folder named "modules", and all the js and css in a folder callded static, separated in two subfolders. The html files are in a folder called "templates".
+---
 
-### Python files
+## Features
 
-The "app.py" file contain all the flask app core. I try to put there the minimal amount of code, puting everything in separate functions in ordered files, and import them in after.
-In the "database.py" file, we have everything about the database gestion.
-In "iss_info.py", we have all the functions related to the crew on board.
-In "iss_traker.py", we have all the functions related to the position of the iss, and the metics of the spacecraft.
-In "tle_fetcher.py", we get the tle information using external api for retrieving infos about the iss.
-In "user_service.py" we have everything that concern the user logs, and map settings.
+- **Interactive map** (Leaflet + OpenStreetMap) with the ISS's live position, refreshed every 10 seconds.
+- **Future trajectory**: the ground track of the next 0 to 12 hours, adjustable with a slider.
+- **Layer controls**: show or hide the ISS icon and the trajectory.
+- **Live information panel**: altitude, speed and the current crew on board.
+- **Pass predictions**: the next three passes over your location, using your browser's geolocation.
+- **User accounts**: register and log in to save your map settings (ISS icon, trajectory, trajectory duration and zoom level) and get them back on your next visit.
 
-The similar logic is used in the js files, separating functions and infos according to the group of things they belong to.
+## How it works
 
-For the html files, we have four part, one with the common things across the site, the "index.html" for the homepage, the "login.html" for the login page and "register.html" for the register page.
+| Part | Implementation |
+| --- | --- |
+| **Orbit data** | TLE (two-line element set) fetched from [CelesTrak](https://celestrak.org), cached for 24 hours in `tle_cache.txt`, with a built-in fallback TLE if the network fails |
+| **Orbit computation** | [PyEphem](https://rhodesmill.org/pyephem/): position, altitude, ground track and pass prediction computed from the TLE |
+| **Crew** | [Open Notify](http://open-notify.org/Open-Notify-API/People-In-Space/) API |
+| **Backend** | Flask JSON API (`/iss-now`, `/future-trajectory`, `/iss-info`, `/iss-crew`, `/next-passes`) plus routes for accounts and settings |
+| **Accounts** | SQLite, passwords hashed with Werkzeug, sessions handled by Flask |
+| **Frontend** | Vanilla JavaScript split by feature (`map`, `iss`, `controls`, `info`, `utils`) and modular CSS |
 
-## Video Presentation
+## Project structure
 
-**[Video link](https://youtu.be/86QOJ3cgrl4)**
+```
+ISS-Vision/
+├── app.py               # Flask routes only; logic lives in modules/
+├── modules/
+│   ├── database.py      # SQLite setup and connections
+│   ├── iss_tracker.py   # position, ground track, altitude, speed, passes (PyEphem)
+│   ├── iss_info.py      # crew on board
+│   ├── tle_fetcher.py   # TLE download, cache and fallback
+│   └── user_service.py  # registration, login, saved map settings
+├── static/
+│   ├── js/              # map, iss, controls, info, utils
+│   └── css/
+├── templates/           # base, index, login, register
+└── requirements.txt
+```
 
-### Video transcription
+`app.py` stays as small as possible: every feature lives in its own module, on the Python side and on the JavaScript side.
 
-Hello, my name is Victor, and this is the presentation of my final project of Harvard's CS50 course. It is Sunday the 8th of September two thousand twenty four, my github name is TheAveron, and my edx name is victor_1791. My project, called "Space Station Vision", is like its name says, a website for viewing where is the space station around the earth. on the homepage, we can see different information about the iss. First, on the right, we can see the actual speed of the station, its altitude and the crew currently on board. On the bottom right, we have a button that calculates the next three passes of the ISS over your location. Finally, we can change certain settings for the map, such as whether the iss_icon is shown and whether the trajectory is shown. We can also adjust the trajectory time, which defines how many hours of the trajectory we want to see. You can also create an account and to save theses settings for the next time you connect. I hope you enjoy using my project and thank you to your listening.
+## Getting started
+
+```bash
+git clone https://github.com/TheAveron/ISS-Vision.git
+cd ISS-Vision
+python -m venv venv && source venv/bin/activate    # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+echo "TOKEN=change-me-to-a-long-random-string" > .env   # Flask secret key
+python app.py
+```
+
+Then open <http://127.0.0.1:5000>. The database is created automatically on first launch.
+
+## Limitations and ideas
+
+- The TLE is refreshed once a day; between reboosts of the station, accuracy stays good, but it does degrade over time.
+- Pass predictions give rise and set times only. Adding maximum elevation, duration and a "visible to the naked eye" filter (night-time only) would be a natural next step.
+- The trajectory is a ground track sampled every 60 seconds.
+- Ideas: a public deployment, notifications before a pass, and a live-updating pass list.
+
+## Credits
+
+Built by [TheAveron](https://github.com/TheAveron) as the final project of CS50x, September 2024. Map data © OpenStreetMap contributors.
+
+## License
+
+MIT
